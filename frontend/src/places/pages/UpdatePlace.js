@@ -29,7 +29,7 @@ const UpdatePlace = () => {
   useEffect(() => {
 		const fetchPlaces = async () => {
 			try {
-				const responseData = await sendRequest(`http://localhost:5000/api/places/${placeID}`);
+				const responseData = await sendRequest(`${process.env.REACT_APP_BACKEND_URL}/places/${placeID}`);
 				setLoadedPlaces(responseData.place);
         setFormData({
           title: { value: loadedPlaces.title, isValid: true },
@@ -46,13 +46,13 @@ const UpdatePlace = () => {
     
     try {
       await sendRequest(
-        `http://localhost:5000/api/places/${placeID}`,
+        `${process.env.REACT_APP_BACKEND_URL}/places/${placeID}`,
         "PATCH",
         JSON.stringify({
           title: formState.inputs.title.value,
           description: formState.inputs.description.value,
         }),
-        { "Content-Type": "application/json" },
+        { "Content-Type": "application/json", "Authorization": `Bearer ${auth.token}` },
       );
 
       // Redirect

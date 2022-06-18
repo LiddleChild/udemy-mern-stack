@@ -1,31 +1,27 @@
-import React, { useState, useCallback } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
 
+// import UserPlaces from './places/pages/UserPlaces';
+// import Users from './users/pages/Users';
+// import NewPlace from './places/pages/NewPlace';
+// import UpdatePlace from './places/pages/UpdatePlace';
+// import Auth from './users/pages/Auth';
 import MainNavigation from './shared/components/Navigation/MainNavigation';
-import UserPlaces from './places/pages/UserPlaces';
-import Users from './users/pages/Users';
-import NewPlace from './places/pages/NewPlace';
-import UpdatePlace from './places/pages/UpdatePlace';
-import Auth from './users/pages/Auth';
+import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
 import { AuthContext } from './shared/context/auth-context';
+import { useAuth } from './shared/hooks/auth-hook';
+
+const Users = React.lazy(() => import("./users/pages/Users"));
+const NewPlace = React.lazy(() => import('./places/pages/NewPlace'));
+const UserPlaces = React.lazy(() => import('./places/pages/UserPlaces'));
+const UpdatePlace = React.lazy(() => import('./places/pages/UpdatePlace'));
+const Auth = React.lazy(() => import('./users/pages/Auth'));
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userID, setUserID] = useState(null);
-
-  const login = useCallback((uid) => {
-    setIsLoggedIn(true);
-    setUserID(uid);
-  }, []);
-  
-  const logout = useCallback(() => {
-    setIsLoggedIn(false);
-    setUserID(null);
-  }, []);
+  const {token, login, logout, userID} = useAuth();
 
   let routes;
-
-  if (isLoggedIn) {
+  if (token) {
     routes = (
       <Switch>
         <Route path="/" exact>
@@ -70,7 +66,8 @@ const App = () => {
   return (
     <AuthContext.Provider value={
       {
-        isLoggedIn,
+        isLoggedIn: !!token,
+        token,
         userID,
         login,
         logout
@@ -79,7 +76,9 @@ const App = () => {
       <Router>
         <MainNavigation />
         <main>
-          {routes}
+          <Suspense fallback={<div className="center"><LoadingSpinner /></div>}>
+            {routes}
+          </Suspense>
         </main>
       </Router>
     </AuthContext.Provider>
